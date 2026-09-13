@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+
+    <style>
+*{
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+    padding: 35px 20px 50px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: #172554;
+    background:
+        radial-gradient(circle at top left, #f0abfc, transparent 35%),
+        radial-gradient(circle at bottom right, #67e8f9, transparent 35%),
+        linear-gradient(135deg, #eef2ff, #fff7ed);
+}
+
+.container{
+    width: 92%;
+    max-width: 900px;
+    margin: auto;
+}
+
+h1{
+    text-align: center;
+    font-size: 40px;
+    margin: 10px 0 35px;
+    color: #4c1d95;
+}
+
+.card{
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(10px);
+    padding: 28px;
+    border-radius: 24px;
+    margin-bottom: 22px;
+    border: 2px solid rgba(255,255,255,0.8);
+    box-shadow: 0 15px 35px rgba(76,29,149,0.12);
+}
+
+.card h2{
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #6d28d9;
+}
+
+#total{
+    text-align: center;
+    font-size: 34px;
+    color: #db2777;
+    margin: 5px 0;
+}
+
+input,
+select{
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 13px;
+    border: 2px solid #ddd6fe;
+    border-radius: 12px;
+    background: #faf5ff;
+    color: #312e81;
+    font-size: 15px;
+    outline: none;
+}
+
+input:focus,
+select:focus{
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.12);
+}
+
+button{
+    padding: 13px 24px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 7px 15px rgba(139,92,246,0.25);
+    transition: 0.2s;
+}
+
+button:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(139,92,246,0.3);
+}
+
+#expense-list{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.expense{
+    padding: 17px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #fdf4ff, #eff6ff);
+    border: 2px solid #e9d5ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expense p{
+    margin: 4px 0;
+}
+
+.expense-amount{
+    font-size: 18px;
+    font-weight: bold;
+    color: #db2777;
+}
+
+.delete-btn{
+    background: linear-gradient(135deg, #f43f5e, #ef4444);
+    box-shadow: 0 5px 12px rgba(239,68,68,0.2);
+}
+
+.delete-btn:hover{
+    background: linear-gradient(135deg, #e11d48, #dc2626);
+}
+
+.reset{
+    display: flex;
+    justify-content: center;
+}
+@media(max-width:600px){
+
+    body{
+        padding: 25px 12px 40px;
+    }
+
+    .container{
+        width: 96%;
+    }
+
+    h1{
+        font-size: 30px;
+    }
+
+    .card{
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .expense{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Expense Tracker</h1>
+
+        <div class="card">
+
+            <h2>Add New Expense</h2>
+
+            <input
+                type="text"
+                id="expense-name"
+                placeholder="Enter expense"
+            >
+
+            <input
+                type="number"
+                id="expense-amount"
+                placeholder="Enter amount"
+            >
+
+            <select id="expense-category">
+                <option value="">Select category</option>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button id="add-expense" onclick="expense()">
+                Add Expense
+            </button>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2 id="total">Total : ₹0</h2>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Recent Expenses</h2>
+
+            <div id="expense-list">
+
+            </div>
+
+        </div>
+
+        <div class="reset">
+            <button id="reset-btn" onclick="resetexpense()">Reset</button>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        class Expense{
+
+            constructor(expense_name, amount, category){
+
+                this.expense_name = expense_name;
+                this.amount = amount;
+                this.category = category;
+
+            }
+
+        }
+        let expense_array = [];
+
+        let totalexpense = document.getElementById("total");
+
+        let expenselist = document.getElementById("expense-list");
+
+        let total = 0;
+
+
+        function display(){
+
+            total = 0;
+
+            totalexpense.innerText = "";
+
+            expenselist.innerHTML = "";
+
+
+            for(let i = 0; i < expense_array.length; i++){
+
+                expenselist.innerHTML += `
+                
+                    <div class="expense">
+
+                        <div>
+
+                            <p>${i + 1}. ${expense_array[i].expense_name}</p>
+
+                            <p>Category : ${expense_array[i].category}</p>
+
+                            <p class="expense-amount">
+                                ₹${expense_array[i].amount}
+                            </p>
+
+                        </div>
+
+                        <button class="delete-btn" onclick="expensedel(${i})">
+                            Delete
+                        </button>
+
+                    </div>
+
+                `;
+
+                total += expense_array[i].amount;
+
+            }
+
+
+            totalexpense.innerText = `Total : ₹${total}`;
+
+        }
+
+        function reset(){
+            document.getElementById("expense-name").value = "";
+            document.getElementById("expense-amount").value = "";
+            document.getElementById("expense-category").value = "";
+        }
+        function expense(){
+
+            let expense_name_input =
+                document.getElementById("expense-name").value;
+
+            expense_name_input =
+                expense_name_input.trim();
+
+            if(expense_name_input == ""){
+                alert("Please fill the data in expense");
+                return;
+            }
+
+            let expense_cost_input =
+                document.getElementById("expense-amount").value;
+
+            expense_cost_input =
+                expense_cost_input.trim();
+
+            if(expense_cost_input == ""){
+                alert("Please fill the data in input");
+                return;
+            }
+            expense_cost_input =
+                Number(expense_cost_input);
+            if(expense_cost_input < 0){
+                alert("Amount cannot be negative");
+                return;
+            }
+            if(expense_cost_input <= 0){
+                alert("Amount must be greater than 0");
+                return;
+            }
+
+            let expense_category_input =
+                document.getElementById("expense-category").value;
+            
+            if(expense_category_input == ""){
+                alert("Please fill the data in category");
+                return;
+            }
+            let expense_list = new Expense(
+                expense_name_input,
+                expense_cost_input,
+                expense_category_input
+            );
+
+
+            expense_array.push(expense_list);
+
+            display();
+            reset();
+            localStorage.setItem("expense_array", JSON.stringify(expense_array));
+        }
+
+        function expensedel(delete_no){
+            expense_array.splice(delete_no, 1);
+            display();
+            localStorage.setItem("expense_array", JSON.stringify(expense_array));
+        }
+
+        window.onload = function(){
+            let expense_array_new = JSON.parse(localStorage.getItem("expense_array")) || [];
+            expense_array = expense_array_new.map(function(t){
+                return new Expense(t.expense_name, t.amount, t.category);
+            });
+            display();
+        }
+        function resetexpense(){
+            if(confirm("Are you sure you want to reset your expenses")){
+                localStorage.removeItem("expense_array");
+                location.reload();
+            }
+        }
+    </script>
+
+</body>
+</html>
